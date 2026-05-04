@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Talent Sourcing Tool</title>
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-light: #94a3b8;
+            --border: #334155;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 2rem 1rem;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: var(--card-bg);
+            max-width: 650px;
+            width: 100%;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+        h1 { margin-top: 0; font-size: 1.75rem; }
+        p.subtitle { color: var(--text-light); margin-bottom: 2rem; }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #cbd5e1; }
+        input {
+            width: 100%; padding: 0.75rem; background: #0f172a;
+            border: 1px solid var(--border); border-radius: 8px;
+            color: white; font-size: 1rem; box-sizing: border-box; transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); }
+        
+        button.primary-btn {
+            width: 100%; background-color: var(--primary); color: white;
+            border: none; padding: 1rem; border-radius: 8px; font-size: 1.05rem;
+            font-weight: 600; cursor: pointer; transition: background-color 0.2s; margin-top: 1rem;
+        }
+        button.primary-btn:hover { background-color: var(--primary-hover); }
+        
+        #results { margin-top: 2.5rem; display: none; }
+        
+        .result-card {
+            background: #0f172a; border: 1px solid var(--border);
+            border-left: 4px solid var(--primary); padding: 1.25rem;
+            margin-bottom: 1rem; border-radius: 8px; position: relative;
+        }
+        .result-card h4 { margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--text); }
+        .result-card p { margin: 0; font-size: 0.9rem; color: var(--text-light); padding-right: 80px; }
+        
+        .actions {
+            margin-top: 1rem; display: flex; gap: 0.75rem;
+        }
+        .action-link {
+            background: var(--primary); color: white; text-decoration: none;
+            padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600;
+        }
+        .action-link:hover { background: var(--primary-hover); }
+        
+        .copy-btn {
+            background: transparent; color: var(--text-light); border: 1px solid var(--border);
+            padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: #334155; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>⚡ Pro Sourcing Tool</h1>
+        <p class="subtitle">Generate complex Boolean search strings for targeted talent mapping.</p>
+
+        <div class="form-group">
+            <label for="jobDesc">Job Title & Key Skills (Must Have)</label>
+            <input type="text" id="jobDesc" placeholder='e.g., "Software Engineer" React Node'>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" placeholder="e.g., Austin OR Remote">
+            </div>
+            <div class="form-group">
+                <label for="exclude">Exclude Words (Optional)</label>
+                <input type="text" id="exclude" placeholder="e.g., Manager, Director">
+            </div>
+        </div>
+
+        <button class="primary-btn" onclick="generateSourcingLinks()">Generate X-Ray Searches</button>
+
+        <div id="results">
+            <h3 style="border-bottom: 1px solid #334155; padding-bottom: 0.5rem;">Your Sourcing Links</h3>
+            <div id="links-container"></div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(buttonElement, textToCopy) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = buttonElement.innerText;
+                buttonElement.innerText = "Copied! ✓";
+                setTimeout(() => { buttonElement.innerText = originalText; }, 2000);
+            });
+        }
+
+        function createResultCard(title, description, query) {
+            const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            // Escaping quotes for the onclick handler
+            const safeQuery = query.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            
+            return `
+                <div class="result-card">
+                    <h4>${title}</h4>
+                    <p>${description}</p>
+                    <div class="actions">
+                        <a href="${url}" target="_blank" class="action-link">Open in Google</a>
+                        <button class="copy-btn" onclick="copyToClipboard(this, '${safeQuery}')">Copy Boolean</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateSourcingLinks() {
+            const jobDesc = document.getElementById('jobDesc').value.trim();
+            const location = document.getElementById('location').value.trim();
+            const excludeInput = document.getElementById('exclude').value.trim();
+
+            if (!jobDesc) {
+                alert("Please enter a job title or key skills.");
+                return;
+            }
+
+            // Build base terms
+            let terms = `${jobDesc}`;
+            if (location) terms += ` "${location}"`;
+
+            // Build exclusions
+            let exclusions = "";
+            if (excludeInput) {
+                const excludeArray = excludeInput.split(',').map(item => item.trim()).filter(item => item !== "");
+                excludeArray.forEach(word => {
+                    exclusions += ` -"${word}"`;
+                });
+            }
+
+            const baseQuery = `${terms}${exclusions}`;
+
+            // 1. LinkedIn Profiles
+            const linkedinQuery = `site:linkedin.com/in/ ${baseQuery}`;
+            
+            // 2. Resumes (PDF/Word)
+            const resumeQuery = `(intitle:resume OR inurl:resume) ${baseQuery} (filetype:pdf OR filetype:doc OR filetype:docx) -job -jobs -sample -template`;
+            
+            // 3. GitHub (Developers)
+            const githubQuery = `site:github.com "joined" ("public repositories" OR "followers") ${baseQuery}`;
+
+            // 4. Behance (Designers)
+            const behanceQuery = `site:behance.net/gallery OR site:behance.net/portfolio ${baseQuery}`;
+
+            // 5. Contact Info Hunting (Finding personal emails)
+            const emailQuery = `(intitle:resume OR inurl:portfolio OR site:linkedin.com/in/) ${baseQuery} ("@gmail.com" OR "@yahoo.com" OR "@me.com" OR "@hotmail.com") -job`;
+
+            const container = document.getElementById('links-container');
+            container.innerHTML = 
+                createResultCard("💼 LinkedIn Profiles", "Standard public profile search.", linkedinQuery) +
+                createResultCard("📄 Uploaded Resumes", "Raw PDF/Word documents hosted online.", resumeQuery) +
+                createResultCard("📧 Email Hunter", "Searches profiles and resumes explicitly containing personal email addresses.", emailQuery) +
+                createResultCard("💻 GitHub Profiles", "Targeted search for developer repositories and profiles.", githubQuery) +
+                createResultCard("🎨 Behance Portfolios", "Targeted search for UI/UX/Graphic designers.", behanceQuery);
+
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
+
