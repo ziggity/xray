@@ -6,13 +6,15 @@
     <title>Pro Talent Sourcing Tool</title>
     <style>
         :root {
-            --primary: #0ea5e9;
-            --primary-hover: #0284c7;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
             --bg: #0f172a;
             --card-bg: #1e293b;
             --text: #f8fafc;
             --text-light: #94a3b8;
             --border: #334155;
+            --accent: #f43f5e;
+            --cyber: #10b981;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -25,7 +27,7 @@
         }
         .container {
             background: var(--card-bg);
-            max-width: 650px;
+            max-width: 750px;
             width: 100%;
             padding: 2.5rem;
             border-radius: 16px;
@@ -35,19 +37,17 @@
         h1 { margin-top: 0; font-size: 1.75rem; }
         p.subtitle { color: var(--text-light); margin-bottom: 2rem; }
         
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         .form-group { margin-bottom: 1.25rem; }
+        .full-width { grid-column: 1 / -1; }
+        
         label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #cbd5e1; }
         input {
             width: 100%; padding: 0.75rem; background: #0f172a;
             border: 1px solid var(--border); border-radius: 8px;
             color: white; font-size: 1rem; box-sizing: border-box; transition: all 0.2s;
         }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
         
         button.primary-btn {
             width: 100%; background-color: var(--primary); color: white;
@@ -58,28 +58,37 @@
         
         #results { margin-top: 2.5rem; display: none; }
         
+        .results-section-title {
+            border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin: 2rem 0 1rem 0;
+            color: var(--text); font-size: 1.2rem;
+        }
+        
+        .results-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+        }
+        
         .result-card {
             background: #0f172a; border: 1px solid var(--border);
             border-left: 4px solid var(--primary); padding: 1.25rem;
-            margin-bottom: 1rem; border-radius: 8px; position: relative;
+            border-radius: 8px; display: flex; flex-direction: column;
         }
-        .result-card h4 { margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--text); }
-        .result-card p { margin: 0; font-size: 0.9rem; color: var(--text-light); padding-right: 80px; }
+        .result-card.conference { border-left-color: var(--accent); grid-column: 1 / -1; }
+        .result-card.cyber { border-left-color: var(--cyber); }
         
-        .actions {
-            margin-top: 1rem; display: flex; gap: 0.75rem;
-        }
-        .action-link {
-            background: var(--primary); color: white; text-decoration: none;
-            padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600;
-        }
-        .action-link:hover { background: var(--primary-hover); }
+        .result-card h4 { margin: 0 0 0.5rem 0; font-size: 1.05rem; color: var(--text); }
+        .result-card p { margin: 0; font-size: 0.85rem; color: var(--text-light); flex-grow: 1; margin-bottom: 1rem; }
         
-        .copy-btn {
-            background: transparent; color: var(--text-light); border: 1px solid var(--border);
-            padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;
-            transition: all 0.2s;
+        .actions { display: flex; gap: 0.5rem; }
+        .action-link, .copy-btn {
+            padding: 0.4rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            text-decoration: none; text-align: center; flex: 1; transition: all 0.2s;
         }
+        .action-link { background: var(--border); color: white; border: 1px solid transparent; }
+        .action-link:hover { background: #475569; }
+        .action-link.primary-action { background: var(--primary); }
+        .action-link.primary-action:hover { background: var(--primary-hover); }
+        
+        .copy-btn { background: transparent; color: var(--text-light); border: 1px solid var(--border); }
         .copy-btn:hover { background: #334155; color: white; }
     </style>
 </head>
@@ -91,7 +100,7 @@
 
         <div class="form-group">
             <label for="jobDesc">Job Title & Key Skills (Must Have)</label>
-            <input type="text" id="jobDesc" placeholder='e.g., "Software Engineer" React Node'>
+            <input type="text" id="jobDesc" placeholder='e.g., "Penetration Tester" OR "Security Engineer"'>
         </div>
 
         <div class="grid-2">
@@ -101,16 +110,34 @@
             </div>
             <div class="form-group">
                 <label for="exclude">Exclude Words (Optional)</label>
-                <input type="text" id="exclude" placeholder="e.g., Manager, Director">
+                <input type="text" id="exclude" placeholder="e.g., Manager, Recruiter">
+            </div>
+
+            <div class="form-group full-width">
+                <label for="conference">Target Conference (Optional)</label>
+                <input list="conferences" id="conference" placeholder="e.g., DEFCON, PyCon, KubeCon...">
+                <datalist id="conferences">
+                    <option value='"DEF CON" OR DEFCON OR "Black Hat"'>Cybersecurity</option>
+                    <option value='PyCon OR PyPy'>Python Community</option>
+                    <option value='KubeCon'>Kubernetes / DevOps</option>
+                    <option value='"AWS re:Invent"'>Cloud / AWS</option>
+                </datalist>
             </div>
         </div>
 
         <button class="primary-btn" onclick="generateSourcingLinks()">Generate X-Ray Searches</button>
 
         <div id="results">
-            <h3 style="border-bottom: 1px solid #334155; padding-bottom: 0.5rem;">Your Sourcing Links</h3>
-            <div id="links-container"></div>
+            <div id="conference-container"></div>
+
+            <h3 class="results-section-title">Standard Sourcing Channels</h3>
+            <div class="results-grid" id="standard-links-container"></div>
+
+            <h3 class="results-section-title">Niche Communities & Cyber</h3>
+            <div class="results-grid" id="niche-links-container"></div>
         </div>
+        <div class="footer" style="margin-top: 2rem; text-align: center; font-size: 0.8rem; color: var(--text-light);">
+            Made with 💜 by a passionate talent sourcer, Zach Beecher </div>
     </div>
 
     <script>
@@ -122,18 +149,20 @@
             });
         }
 
-        function createResultCard(title, description, query) {
+        function createResultCard(title, description, query, cardStyle = "") {
             const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-            // Escaping quotes for the onclick handler
             const safeQuery = query.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             
+            // Apply specific button colors for the conference card
+            const btnClass = cardStyle === "conference" ? "action-link primary-action" : "action-link";
+            
             return `
-                <div class="result-card">
+                <div class="result-card ${cardStyle}">
                     <h4>${title}</h4>
                     <p>${description}</p>
                     <div class="actions">
-                        <a href="${url}" target="_blank" class="action-link">Open in Google</a>
-                        <button class="copy-btn" onclick="copyToClipboard(this, '${safeQuery}')">Copy Boolean</button>
+                        <a href="${url}" target="_blank" class="${btnClass}">Search Google</a>
+                        <button class="copy-btn" onclick="copyToClipboard(this, '${safeQuery}')">Copy Code</button>
                     </div>
                 </div>
             `;
@@ -143,6 +172,7 @@
             const jobDesc = document.getElementById('jobDesc').value.trim();
             const location = document.getElementById('location').value.trim();
             const excludeInput = document.getElementById('exclude').value.trim();
+            const conference = document.getElementById('conference').value.trim();
 
             if (!jobDesc) {
                 alert("Please enter a job title or key skills.");
@@ -164,28 +194,46 @@
 
             const baseQuery = `${terms}${exclusions}`;
 
-            // 1. LinkedIn Profiles
+            // --- 1. CONFERENCE (If applicable) ---
+            const confContainer = document.getElementById('conference-container');
+            if (conference) {
+                const confQuery = `(site:linkedin.com/in/ OR intitle:resume OR inurl:portfolio) (${conference}) (speaker OR presented OR talk OR attendee OR panel) ${baseQuery}`;
+                confContainer.innerHTML = createResultCard("🎟️ Conference Speakers & Attendees", `Targeted search for talent associated with ${conference}.`, confQuery, "conference");
+            } else {
+                confContainer.innerHTML = "";
+            }
+
+            // --- 2. STANDARD CHANNELS ---
             const linkedinQuery = `site:linkedin.com/in/ ${baseQuery}`;
-            
-            // 2. Resumes (PDF/Word)
             const resumeQuery = `(intitle:resume OR inurl:resume) ${baseQuery} (filetype:pdf OR filetype:doc OR filetype:docx) -job -jobs -sample -template`;
-            
-            // 3. GitHub (Developers)
             const githubQuery = `site:github.com "joined" ("public repositories" OR "followers") ${baseQuery}`;
+            const emailQuery = `(intitle:resume OR inurl:portfolio OR site:linkedin.com/in/) ${baseQuery} ("@gmail.com" OR "@yahoo.com" OR "@protonmail.com") -job`;
 
-            // 4. Behance (Designers)
-            const behanceQuery = `site:behance.net/gallery OR site:behance.net/portfolio ${baseQuery}`;
-
-            // 5. Contact Info Hunting (Finding personal emails)
-            const emailQuery = `(intitle:resume OR inurl:portfolio OR site:linkedin.com/in/) ${baseQuery} ("@gmail.com" OR "@yahoo.com" OR "@me.com" OR "@hotmail.com") -job`;
-
-            const container = document.getElementById('links-container');
-            container.innerHTML = 
+            document.getElementById('standard-links-container').innerHTML = 
                 createResultCard("💼 LinkedIn Profiles", "Standard public profile search.", linkedinQuery) +
                 createResultCard("📄 Uploaded Resumes", "Raw PDF/Word documents hosted online.", resumeQuery) +
-                createResultCard("📧 Email Hunter", "Searches profiles and resumes explicitly containing personal email addresses.", emailQuery) +
-                createResultCard("💻 GitHub Profiles", "Targeted search for developer repositories and profiles.", githubQuery) +
-                createResultCard("🎨 Behance Portfolios", "Targeted search for UI/UX/Graphic designers.", behanceQuery);
+                createResultCard("💻 GitHub Profiles", "Developer repositories and profiles.", githubQuery) +
+                createResultCard("📧 Email Hunter", "Finds profiles/resumes with personal email addresses.", emailQuery);
+
+            // --- 3. NICHE COMMUNITIES & CYBER ---
+            
+            // Meetups
+            const meetupQuery = `site:meetup.com "member since" ${baseQuery}`;
+            
+            // Bug Bounty (HackerOne, Bugcrowd, TryHackMe)
+            const bountyQuery = `(site:hackerone.com OR site:bugcrowd.com OR site:tryhackme.com/p/) ${baseQuery}`;
+            
+            // Credly Digital Badges (Certifications)
+            const certQuery = `site:credly.com/users/ ${baseQuery}`;
+            
+            // Trello Public Boards
+            const trelloQuery = `site:trello.com/b/ ${baseQuery}`;
+
+            document.getElementById('niche-links-container').innerHTML = 
+                createResultCard("🛡️ Bug Bounty & CTFs", "HackerOne, Bugcrowd, and TryHackMe leaderboards.", bountyQuery, "cyber") +
+                createResultCard("🏅 Credly Certifications", "Verified badge holders (OSCP, CISSP, AWS, etc).", certQuery, "cyber") +
+                createResultCard("🍕 Meetup.com Members", "Find local chapter members and organizers.", meetupQuery, "cyber") +
+                createResultCard("📋 Public Trello Boards", "Find public roadmaps, open source projects, and CTF boards.", trelloQuery, "cyber");
 
             document.getElementById('results').style.display = 'block';
         }
